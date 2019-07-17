@@ -1,8 +1,6 @@
 # docker-arcgis-enterprise
-A set of dockers for ESRI Arcgis Enterprise, Note this is development purposes only. ERSI software still relys on older verisons of Java that are not compatible 
-with containerization. JVM ignores container namespaces and cgroups, resulting in over usage of host resources and producing inconsistent
-results. ERSI has not release a timeline for rollout over to OpenJKD9 or newer, but mentions at ERSI UC Conference 2019 could be anywhere from 2020
-to 2022. 
+A set of dockers for ESRI Arcgis Enterprise, Note this is development purposes only. The ERSI software, version 10.6, still uses Java that is not compatible with containerization. JVM on these deployments will ignore container namespaces and cgroups. Producing inconsistent results and over usage of host resources. ERSI has not release a timeline for a rollout to OpenJKD9 or newer, but mentions at ERSI UC Conference 2019 could be anywhere from 2020
+to 2022. Sub repositories forked from https://github.com/Wildsong/docker-arcgis-enterprise
 
 Each of these folders contains files to build a separate Docker image:
 
