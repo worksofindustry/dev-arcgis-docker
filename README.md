@@ -131,5 +131,3 @@ that is pretty easy to read, basically it's filling in a form and sending it.
       response = send_request(request, @server_url)
 
       validate_response(response)
-
-You should be able to see the form by going to https://yourserver:6443/admin/createNewSite
