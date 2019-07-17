@@ -1,0 +1,29 @@
+# Docker command to start ArcGIS Server in detached mode.
+#
+AGSNAME="server"
+DOCKERHOST="hpcc-u16-01"
+AGSVERSION="10.6"
+AGS_DOMAIN="esri"
+
+# AGS_DOMAIN created by running: docker network create esri
+
+# Stop a previous detached server, if any.
+docker stop ${AGSNAME} > /dev/null 2>&1
+docker rm ${AGSNAME} > /dev/null 2>&1
+
+echo "Docker is starting in detached mode."
+echo "Management URL is http://${DOCKERHOST}:6080/arcgis/manager"
+
+# .wine looks a little strange, but is installed along side with ESRI, using /forward slash to escape _ underscores
+#  make sure the directories exists on the docker host 
+# also I'm exposing port 6445 due to 6443 being in use on my dev machine
+
+docker run -d --name=${AGSNAME} --net-alias=${AGSNAME}  \
+    --hostname=${AGSNAME}.${AGS_DOMAIN} --net=${AGS_DOMAIN} \
+    -p 6080:6080 -p 6445:6443 \
+    -e AGS_USER -e AGS_PASSWORD -e AGS_DOMAIN \
+    -v `pwd`/data/config-store:/home/gisowner/arcgis/server/usr/config-store \
+    -v `pwd`/data/directories:/home/gisowner/arcgis/server/usr/directories \
+    -v `pwd`/data/logs:/home/gisowner/arcgis/server/usr/logs \
+    -v `pwd`/data/sysgen:/home/gisowner/arcgis/server/framework/runtime/.wine/drive_c/Program\ Files/ESRI/License${AGSVERSION}/sysgen \
+    husadevops/gisserver:build

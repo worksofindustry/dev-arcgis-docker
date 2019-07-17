@@ -1,0 +1,58 @@
+version: '2' 
+services:
+  server:
+    container_name: server
+    build: arcgis-server
+    image: husadevops/gisserver
+    ports:
+      - "6080:6080"
+      - "6443:6443"
+    volumes:
+      - "/srv/arcgis/config-store:/home/gisowner/server/usr/config-store"
+      - "/srv/arcgis/directories:/home/gisowner/server/usr/directories"
+      - "/srv/arcgis/logs:/home/gisowner/server/usr/logs"
+    networks:
+      esri:
+
+
+  portal:
+    container_name: portal
+    build: portal-for-arcgis
+    image: husadevops/portal-for-arcgis
+    ports:
+      - "7080:7080"
+      - "7443:7443"
+    volumes:
+      - /srv/arcgis/arcgisportal:/home/gisowner/portal/usr/arcgisportal
+    networks:
+      esri:
+
+    
+  web-adaptor:
+    container_name: web-adaptor
+    build: web-adaptor
+    image: husadevops/web-adaptor
+    ports:
+      - "80:80"
+      - "443:443"
+    links:
+      - "portal"
+      - "server"
+      - "datastore"
+    networks:
+      esri:
+
+
+  datastore:
+    container_name: datastore
+    build: datastore
+    image: husadevops/datastore
+    ports:
+      - "2443:2443"
+    networks:
+      esri:
+
+
+networks:
+  esri:
+    driver: bridge

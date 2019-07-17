@@ -1,0 +1,19 @@
+# Docker command to start a detached Portal
+#
+PORTALNAME="portal"
+DOCKERHOST="10.0.100.51"
+
+# Stop a previous instance, if any.
+docker stop ${PORTALNAME} > /dev/null 2>&1
+docker rm ${PORTALNAME} > /dev/null 2>&1
+
+echo "Docker is starting Portal for Server in detached mode."
+echo "Portal URL is https://${DOCKERHOST}:7443/arcgis/home"
+echo "see also https://${DOCKERHOST}:7443/arcgis/portaladmin if you get a blank home page"
+
+docker run -d --name=portal --net-alias=portal --hostname=portal.esri --net=esri \
+    -p 7080:7080 -p 7443:7443 \
+    -e AGS_USER -e AGS_PASSWORD -e AGS_DOMAIN \
+    -v `pwd`/data/arcgisportal:/home/arcgis/portal/usr/arcgisportal \
+    husadevops/portal-for_arcgis:1.0
+

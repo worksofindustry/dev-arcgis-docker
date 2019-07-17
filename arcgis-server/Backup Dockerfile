@@ -1,0 +1,56 @@
+From husadevops/gisserver:3.0
+LABEL maintainer="matt.linker@hydromaxusa.com"
+ENV ESRI_VERSION 10.6
+USER root
+
+EXPOSE 6080 6443 6445
+# If you are not using a Docker network to connect containers
+# you might want to expose these ports, too.
+# EXPOSE 1098 4000 4001 4002 4003 4004 6006 6099
+
+# Refer to ESRI docs; this expands limits for user gisowner.
+ADD limits.conf /etc/security/limits.conf
+
+ENV HOME /home/gisowner/
+
+# COPY <all> <the> <things> <last-arg-is-destination>
+COPY *.prvc start.sh create_new_site.py ${HOME}
+
+# create_new_site.py can create the initial admin user and site
+# start.sh will run create_new_site.py
+# Place the provisioning file or authorization file '.ecp' in the same folder as this Dockerfile. 
+# ADD ArcGIS_Server_Linux_106*.tar.gz ${HOME}  not needed, being shipped with image
+
+RUN chown -R gisowner.gisowner ${HOME}
+
+# Start in the gisowner user's home directory.
+WORKDIR ${HOME}
+USER gisowner
+# ESRI uses this in some scripts (including 'backup')
+ENV LOGNAME gisowner
+
+# Run the ESRI installer script as user 'gisowner' with these options:
+#   -m silent         silent mode: don't pop up windows, we don't have a screen
+#   -l yes            Agree to the License Agreement
+#RUN cd ArcGISServer && ./Setup -m silent --verbose -l yes
+# appears the software is already installed with shipped image
+# RUN cd / && cd ArcGISServer && ./Setup -m silent --verbose -l yes -a ${HOME}*.prvc
+
+# After Setup is complete, delete installer to free up space.  
+# If you are a developer you might want to leave it to get access to diagnostics, see
+# http://server.arcgis.com/en/server/latest/administer/linux/checking-server-diagnostics-using-the-diagnostics-tool.htm
+RUN rm -rf ${HOME}/ArcGISServer
+
+# Create these volumes to make it possible to persist ArcGIS Server's data
+VOLUME ["${HOME}arcgis/server/usr/config-store", \
+        "${HOME}arcgis/server/usr/directories", \
+        "${HOME}arcgis/server/usr/logs"]
+
+# Change command line prompt
+ADD bashrc ./.bashrc
+
+# Check the HTTP service
+HEALTHCHECK --interval=30s --timeout=10s --retries=3 CMD curl -sS 127.0.0.1:6080 || exit 1
+
+# Command that will be run by default when you do "docker run" 
+# CMD ./start.sh && tail -f ./arcgis/server/framework/etc/service_error.log
